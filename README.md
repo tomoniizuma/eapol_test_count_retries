@@ -2,7 +2,7 @@
 
 eapol_test that counts the number of retries of RADIUS Access-Request
 
-# Apply patche
+# Apply patch
 
 ```
   $ wget http://w1.fi/releases/wpa_supplicant-2.4.tar.gz   
