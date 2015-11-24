@@ -1,0 +1,80 @@
+diff -ur ./src/radius/radius_client.c ../wpa_supplicant-p/src/radius/radius_client.c
+--- ./src/radius/radius_client.c	2015-03-16 02:30:39.000000000 +0900
++++ ../wpa_supplicant-p/src/radius/radius_client.c	2015-11-24 21:44:18.625190979 +0900
+@@ -327,7 +327,7 @@
+ 	return 0;
+ }
+ 
+-
++//int retries = 0;
+ static int radius_client_retransmit(struct radius_client_data *radius,
+ 				    struct radius_msg_list *entry,
+ 				    os_time_t now)
+@@ -336,7 +336,9 @@
+ 	int s;
+ 	struct wpabuf *buf;
+ 	size_t prev_num_msgs;
+-
++	
++	retries++;
++	fprintf(stderr, "retransmit!!\n");
+ 	if (entry->msg_type == RADIUS_ACCT ||
+ 	    entry->msg_type == RADIUS_ACCT_INTERIM) {
+ 		if (radius->acct_sock < 0)
+diff -ur ./src/radius/radius_client.h ../wpa_supplicant-p/src/radius/radius_client.h
+--- ./src/radius/radius_client.h	2015-03-16 02:30:39.000000000 +0900
++++ ../wpa_supplicant-p/src/radius/radius_client.h	2015-11-24 21:44:20.076197073 +0900
+@@ -13,6 +13,8 @@
+ 
+ struct radius_msg;
+ 
++extern int retries;
++
+ /**
+  * struct hostapd_radius_server - RADIUS server information for RADIUS client
+  *
+diff -ur ./wpa_supplicant/eapol_test.c ../wpa_supplicant-p/wpa_supplicant/eapol_test.c
+--- ./wpa_supplicant/eapol_test.c	2015-03-16 02:30:39.000000000 +0900
++++ ../wpa_supplicant-p/wpa_supplicant/eapol_test.c	2015-11-24 21:42:39.702753419 +0900
+@@ -28,7 +28,9 @@
+ #include "ctrl_iface.h"
+ #include "pcsc_funcs.h"
+ #include "wpas_glue.h"
++#include <sys/types.h>
+ 
++int retries=0;
+ 
+ struct wpa_driver_ops *wpa_drivers[] = { NULL };
+ 
+@@ -1414,9 +1416,9 @@
+ 	    eapol_test.no_mppe_keys)
+ 		ret = 0;
+ 	if (eapol_test.auth_timed_out)
+-		ret = -2;
++		ret = 2;
+ 	if (eapol_test.radius_access_reject_received)
+-		ret = -3;
++		ret = 3;
+ 
+ 	if (save_config)
+ 		wpa_config_write(conf, wpa_s.conf);
+@@ -1436,13 +1438,14 @@
+ 	printf("MPPE keys OK: %d  mismatch: %d\n",
+ 	       eapol_test.num_mppe_ok, eapol_test.num_mppe_mismatch);
+ 	if (eapol_test.num_mppe_mismatch)
+-		ret = -4;
+-	if (ret)
++		ret = 4;
++	
++	if (ret) {
+ 		printf("FAILURE\n");
+-	else
++	} else {
+ 		printf("SUCCESS\n");
+-
++	}
++	printf("retries: %d\n", retries);
+ 	os_program_deinit();
+-
+ 	return ret;
+ }
